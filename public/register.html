@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat App</title>
+    <link rel="stylesheet" href="styles/authStyles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <h2 class="title">Register</h2>
+      <form class="form-div" id="register-form">
+        <label>Username</label>
+        <input
+          class="form-input"
+          id="register-username"
+          type="text"
+          placeholder="Enter Username..."
+        />
+        <label>Password</label>
+        <input
+          class="form-input"
+          id="register-password"
+          type="password"
+          placeholder="Enter Password..."
+        />
+        <label>Email</label>
+        <input
+          class="form-input"
+          id="register-email"
+          type="email"
+          placeholder="Enter Email..."
+        />
+        <button class="submit-button" id="login-button" type="submit">
+          Register
+        </button>
+        <a class="underlink" href="/">Login</a>
+      </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="src/controller.js"></script>
+  </body>
+</html>
