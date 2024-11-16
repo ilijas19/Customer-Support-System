@@ -12,25 +12,29 @@ const authorizePermission = (...roles) => {
 };
 
 const authenticateUser = async (req, res, next) => {
-  const { accessToken, refreshToken } = req.signedCookies;
-  if (accessToken) {
-    const decoded = verifyJwt(accessToken);
-    req.user = decoded;
-    return next();
-  }
-  if (refreshToken) {
-    const decoded = verifyJwt(refreshToken);
-    const { isValid } = await Token.findOne({
-      user: decoded.user.userId,
-      refreshToken: decoded.refreshToken,
-    });
-    if (!isValid) {
-      throw new CustomError.UnauthenticatedError("Authentication Failed");
+  try {
+    const { accessToken, refreshToken } = req.signedCookies;
+    if (accessToken) {
+      const decoded = verifyJwt(accessToken);
+      req.user = decoded;
+      return next();
     }
-    req.user = decoded.user;
-    return next();
+    if (refreshToken) {
+      const decoded = verifyJwt(refreshToken);
+      const { isValid } = await Token.findOne({
+        user: decoded.user.userId,
+        refreshToken: decoded.refreshToken,
+      });
+      if (!isValid) {
+        throw new CustomError.UnauthenticatedError("Authentication Failed");
+      }
+      req.user = decoded.user;
+      return next();
+    }
+    throw new CustomError.UnauthenticatedError("Authentication Failed");
+  } catch (error) {
+    throw new CustomError.UnauthenticatedError("Authentication Failed");
   }
-  throw new CustomError.UnauthenticatedError("Authentication Failed");
 };
 
 module.exports = { authorizePermission, authenticateUser };
