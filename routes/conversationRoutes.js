@@ -22,7 +22,7 @@ router.post(
   createConversation
 );
 router.get(
-  "/operator/:id",
+  "/operator/conversations",
   authenticateUser,
   authorizePermission("operator"),
   getOperatorConversations
