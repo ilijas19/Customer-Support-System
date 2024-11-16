@@ -14,6 +14,8 @@ const connectDb = require("./db/connectDb");
 //ROUTERS
 const authRouter = require("./routes/authRoutes");
 const conversationRouter = require("./routes/conversationRoutes");
+const adminRouter = require("./routes/adminRoutes");
+const messageRouter = require("./routes/messageRoutes");
 //MIDDLEWARES
 const notFound = require("./middlewares/notFound");
 const errorHandler = require("./middlewares/errorHandler");
@@ -25,6 +27,8 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/conversation", conversationRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/message", messageRouter);
 
 app.use(notFound);
 app.use(errorHandler);
