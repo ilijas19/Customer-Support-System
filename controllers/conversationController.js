@@ -1,4 +1,5 @@
 const User = require("../model/User");
+const Message = require("../model/Message");
 const Conversation = require("../model/Conversation");
 const CustomError = require("../errors");
 const { StatusCodes } = require("http-status-codes");
@@ -16,6 +17,17 @@ const createConversation = async (req, res) => {
   if (!user) {
     throw new CustomError.NotFoundError(`No user with id: ${userId}`);
   }
+
+  // const existingConversation = await Conversation.findOne({
+  //   operatorId,
+  //   userId,
+  // });
+  // if (existingConversation) {
+  //   throw new CustomError.BadRequestError(
+  //     "There is ongoing conversation with this user"
+  //   );
+  // }
+
   const conversation = await Conversation.create({
     operatorId: operator._id,
     userId: user._id,
@@ -115,7 +127,7 @@ const deleteConversation = async (req, res) => {
       "conversationId needs to be provided"
     );
   }
-  const conversation = await Conversation.findOneAndDelete({
+  const conversation = await Conversation.findOne({
     _id: conversationId,
   });
   if (!conversation) {
@@ -123,6 +135,10 @@ const deleteConversation = async (req, res) => {
       `No conversation with id: ${conversationId}`
     );
   }
+
+  await Message.deleteMany({ conversationId });
+  await conversation.deleteOne();
+
   res.status(StatusCodes.OK).json({ msg: "Conversation Deleted" });
 };
 

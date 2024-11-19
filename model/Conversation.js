@@ -17,8 +17,8 @@ const ConversationSchema = new mongoose.Schema({
   ],
   status: {
     type: String,
-    enum: ["open", "closed", "pending"],
-    default: "pending",
+    enum: ["open", "closed"],
+    default: "open",
   },
 });
 
