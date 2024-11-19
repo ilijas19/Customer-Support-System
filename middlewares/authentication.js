@@ -26,14 +26,14 @@ const authenticateUser = async (req, res, next) => {
         refreshToken: decoded.refreshToken,
       });
       if (!isValid) {
-        throw new CustomError.UnauthenticatedError("Authentication Failed");
+        return res.redirect("/login");
       }
       req.user = decoded.user;
       return next();
     }
-    throw new CustomError.UnauthenticatedError("Authentication Failed");
+    return res.redirect("/login");
   } catch (error) {
-    throw new CustomError.UnauthenticatedError("Authentication Failed");
+    return res.redirect("/login");
   }
 };
 
