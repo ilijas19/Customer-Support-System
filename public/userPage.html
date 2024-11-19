@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Support</title>
+    <link rel="stylesheet" href="styles/userTabStyles.css" />
+  </head>
+  <body>
+    <main class="chat">
+      <div class="chat-heading">
+        <h1 class="chat-title">Operator Chat</h1>
+        <p class="operator-name" id="user-name">Ilijas</p>
+        <button class="logout-btn">Logout</button>
+      </div>
+      <ul class="chat-container">
+        <li class="message message-left">
+          <p class="message-info">Chat Support</p>
+          <p class="message-text">
+            Operator will join your conversation as soon as possible...
+          </p>
+        </li>
+        <!-- <li class="message message-left">
+          <p class="message-info">Ilijas <span>18:56PM</span></p>
+          <p class="message-text">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt
+            voluptatibus harum pariatur in temporibus fugiat quidem vero
+            perferendis consectetur, mollitia maxime labore accusantium,
+            molestias, laboriosam nesciunt sunt voluptatum. Vel, necessitatibus!
+          </p>
+        </li>
+        <li class="message message-right">
+          <p class="message-info">Ilijas <span>18:56PM</span></p>
+          <p class="message-text">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </p>
+        </li> -->
+      </ul>
+      <form id="message-form" class="input-div">
+        <input class="message-input" type="text" placeholder="Enter Message" />
+        <button class="send-button">Send</button>
+      </form>
+      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+      <script src="/socket.io/socket.io.js"></script>
+      <script type="module" src="src/controller.js"></script>
+    </main>
+  </body>
+</html>

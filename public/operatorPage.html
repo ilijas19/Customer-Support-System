@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Support</title>
+    <link rel="stylesheet" href="styles/operatorTabStyle.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <aside class="aside">
+      <h3 class="aside-title">Chats</h3>
+      <select class="chat-type">
+        <option class="pending" value="pending">Pending</option>
+        <option class="open" value="open">Open</option>
+        <option class="closed" value="closed">Closed</option>
+      </select>
+      <section class="aside-chat-section">
+        <div class="aside-chat">
+          <p class="aside-chat-name">Ilijas</p>
+          <p class="chat-status pending">Pending</p>
+          <i class="fa-solid fa-ellipsis aside-icon"></i>
+        </div>
+        <!-- <div class="aside-chat">
+          <p class="aside-chat-name">Ilijas</p>
+          <p class="chat-status open">Open</p>
+          <i class="fa-solid fa-ellipsis aside-icon"></i>
+        </div>
+        <div class="aside-chat">
+          <p class="aside-chat-name">Ilijas</p>
+          <p class="chat-status closed">Closed</p>
+          <i class="fa-solid fa-ellipsis aside-icon"></i>
+        </div> -->
+      </section>
+    </aside>
+    <main class="chat">
+      <div class="chat-heading">
+        <h1 class="chat-title">Chat With Ilijas</h1>
+        <p class="operator-name">Operator1</p>
+        <button class="logout-btn">Logout</button>
+      </div>
+      <ul class="chat-container">
+        <li class="message message-left">
+          <p class="message-info">Ilijas <span>18:56PM</span></p>
+          <p class="message-text">Lorem ipsum dolor</p>
+        </li>
+        <li class="message message-right">
+          <p class="message-info">Ilijas <span>18:56PM</span></p>
+          <p class="message-text">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </p>
+        </li>
+      </ul>
+      <form id="message-form" class="input-div">
+        <input class="message-input" type="text" placeholder="Enter Message" />
+        <button class="send-button">Send</button>
+      </form>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="src/controller.js"></script>
+  </body>
+</html>
