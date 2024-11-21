@@ -58,3 +58,23 @@ export const createConversation = async (operatorId, userId) => {
     alert(error.response.data.msg);
   }
 };
+
+export const getOperatorConversations = async (status) => {
+  try {
+    const result = await axios.get(
+      `/api/v1/conversation/operator/conversations?status=${status}`
+    );
+    return result.data;
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
+
+export const getUserConversations = async () => {
+  try {
+    const result = await axios.get(`/api/v1/conversation/user/conversations`);
+    return result.data;
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
