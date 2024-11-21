@@ -58,6 +58,10 @@ const getOperatorConversations = async (req, res) => {
     throw new CustomError.BadRequestError("Operator not logged in");
   }
   const queryObject = { operatorId: operator._id };
+  const { status } = req.query;
+  if (status) {
+    queryObject.status = status;
+  }
   const conversations = await Conversation.find(queryObject)
     .populate({
       path: "userId",
@@ -67,6 +71,35 @@ const getOperatorConversations = async (req, res) => {
       path: "operatorId",
       select: "username",
     });
+  res.status(StatusCodes.OK).json({ conversations });
+};
+
+const getUserConversation = async (req, res) => {
+  const user = await User.findOne({
+    _id: req.user.userId,
+    role: "user",
+  });
+
+  if (!user) {
+    throw new CustomError.NotFoundError(
+      `Cant find user with id ${req.user.userId}`
+    );
+  }
+  const queryObject = { userId: user._id };
+  const { status } = req.query;
+  if (status) {
+    queryObject.status = status;
+  }
+  const conversations = await Conversation.find(queryObject)
+    .populate({
+      path: "userId",
+      select: "username",
+    })
+    .populate({
+      path: "operatorId",
+      select: "username",
+    });
+
   res.status(StatusCodes.OK).json({ conversations });
 };
 
@@ -149,4 +182,5 @@ module.exports = {
   openConversation,
   closeConversation,
   deleteConversation,
+  getUserConversation,
 };
