@@ -11,35 +11,81 @@ const authController = () => {
 const userPageController = async (socket, currentUser) => {
   if (window.location.pathname === "/userChat") {
     userView._usernameElement.textContent = currentUser.username;
-
-    //-chat start
+    userView._messageInput.style.pointerEvents = "none";
+    //EXISTING CHAT(user recconection)
+    socket.on("checkExistingChat", async (user) => {
+      const { conversations } = await model.getUserConversations(user);
+      //////////continue here
+      console.log(conversations);
+    });
+    //CHAT START
     socket.on("chatStart", ({ operator, user }) => {
-      console.log(operator, "picked up your chat");
+      console.log(`Chat Beetween ${operator.username} and ${user.username}`);
+      userView.chatInit(model.state);
+      userView.renderMessage(
+        `Operator has joined your chat. You can ask your question`,
+        `${operator.username}`
+      );
+      userView.addMessageFormListener(socket, user.username, user);
+    });
+    //RECIEVING MESSAGES
+    socket.on("message", (formatedMessage) => {
+      console.log(formatedMessage);
+      userView.renderMessage(formatedMessage.msg, formatedMessage.from);
     });
   }
 };
 
-const operatorPageController = async (socket) => {
-  if (window.location.pathname === "/operator") {
-    // ON EACH USER JOIN, QUEUE IS UPDATED AND THERE IS A CLICK LISTENER ON ELEMENT
-    socket.on("updateQueue", (users) => {
-      // FIRST ARGUMENT IS USERS FROM QUEUE FROM SERVER AND SECOND IS HANDLER FUNCTION WHICH IS CALLED ON EACH CLICK ON PENDING CHAT ELEMENT
-      operatorView.renderChatsAddListener(users, async (user) => {
-        // - Start conversation with user
-        // await model.createConversation(model.state.currentUser.userId, user.userId);
+const operatorPageController = async (socket, currentUser) => {
+  let currentFilter = "pending"; // Default filter
 
-        // - operator Joins
-        socket.emit("operatorJoin", {
-          operator: model.state.currentUser,
-          user,
+  if (window.location.pathname === "/operator") {
+    operatorView._operatorName.textContent = currentUser.username;
+
+    // UPDATE QUEUE
+    socket.on("updateQueue", (users) => {
+      if (currentFilter === "pending") {
+        operatorView.renderChatsAddListener(users, async (user) => {
+          // Operator joins chat
+          model.state.currentUser.room = user.username;
+
+          //CREATING CONVERSATION
+          // await model.createConversation(
+          //   model.state.currentUser.userId,
+          //   user.userId
+          // );
+
+          socket.emit("operatorJoin", {
+            operator: model.state.currentUser,
+            user,
+          });
+
+          socket.emit("removeFromQueue", user);
         });
-        // - Chat start
-        socket.once("chatStart", ({ operator, user }) => {
-          console.log(`You picked up chat with ${user.username}`);
-          //adding form listener
-          operatorView.addMessageFormListener(socket, user.username);
-        });
-      });
+      }
+    });
+
+    // CHAT START
+    socket.on("chatStart", ({ operator, user }) => {
+      console.log(`Chat Between ${operator.username} and ${user.username}`);
+      operatorView.chatInit(operator, user);
+      operatorView.addMessageFormListener(socket, user.username, operator);
+    });
+
+    // SWITCH CONVERSATIONS
+    operatorView.addSelectElListener(async (value) => {
+      currentFilter = value; // Update filter state
+      if (value === "pending") {
+        socket.emit("requestQueueUpdate"); // Trigger server-side queue update
+      } else {
+        const conversations = await model.getOperatorConversations(value);
+        operatorView.renderDatabaseConversations(conversations);
+      }
+    });
+
+    // RECEIVING MESSAGES
+    socket.on("message", (formattedMessage) => {
+      operatorView.renderMessage(formattedMessage.msg, formattedMessage.from);
     });
   }
 };
@@ -59,7 +105,7 @@ const socketController = async () => {
       // console.log(currentUser); //currentuser
       socket.emit("userJoin", currentUser);
     });
-    //CALLING CONTROLLERS FOR BOTH PAGES
+    //CALLING SPECIFIC PAGE CONTROLLERS
     userPageController(socket, currentUser);
     operatorPageController(socket, currentUser);
   }
@@ -71,22 +117,3 @@ const init = async () => {
 };
 
 init();
-
-// const socketController = async () => {
-//   if (
-//     window.location.pathname === "/operator" ||
-//     window.location.pathname === "/userChat"
-//   ) {
-//     const socket = io();
-//     const currentUser = await model.getCurrentUser();
-//     //GETING SOCKETID FOR CONNECTED SOCKET
-//     socket.on("socketConnected", (socketId) => {
-//       //ADDING SOCKET ID PROPERTY TO CURRENT USER
-//       currentUser.socketId = socketId;
-//       userPageController(socket);
-//       model.state.currentUser = currentUser;
-//       //SENDING CURRENT USER BACK TO SERVER WITH SOCKET ID
-//       socket.emit("userJoin", { currentUser });
-//     });
-//   }
-// };

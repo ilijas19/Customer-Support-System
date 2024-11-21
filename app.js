@@ -38,13 +38,10 @@ app.use(errorHandler);
 const {
   userJoin,
   userLeave,
-  getAllUsers,
-  getUsersFromQueue,
   joinRoom,
   leaveRoom,
-  leaveAllRooms,
-  findUserBySocketId,
-  findUserByUsername,
+  getAllUsers,
+  getUsersFromQueue,
 } = require("./controllers/socketController");
 
 const port = process.env.PORT || 5000;
@@ -63,20 +60,37 @@ const start = async () => {
     socket.on("userJoin", (user) => {
       userJoin(user);
       io.emit("updateQueue", getUsersFromQueue());
-      //-if user role is 'user' user joins his room
+
       if (user.role === "user") {
+        //-check for existing chat(user reconection)
+        socket.emit("checkExistingChat", user);
+
         joinRoom(socket, user.username, user);
       }
     });
+
+    //LISTENING FOR EVENT SENT BY SELECT ELEMENT FROM CLIENT
+    socket.on("requestQueueUpdate", () => {
+      io.emit("updateQueue", getUsersFromQueue());
+    });
+
     //operator joining chat
     socket.on("operatorJoin", ({ operator, user }) => {
-      leaveRoom(socket, operator.room, operator);
+      //  // Leave all rooms the operator is subscribed to
+      leaveRoom(socket);
       joinRoom(socket, user.username, operator);
-      io.to(operator.room).emit("chatStart", { operator, user });
+      io.to(user.username).emit("chatStart", { operator, user });
     });
+
+    //removing user from queue on operator join
+    socket.on("removeFromQueue", (user) => {
+      userLeave(user.socketId);
+      io.emit("updateQueue", getUsersFromQueue());
+    });
+
     //recieving message from chat
     socket.on("chatMessage", (formatedMessage) => {
-      console.log(formatedMessage);
+      io.to(formatedMessage.roomName).emit("message", formatedMessage);
     });
 
     socket.on("disconnect", () => {

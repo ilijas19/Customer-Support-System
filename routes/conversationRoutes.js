@@ -13,6 +13,7 @@ const {
   openConversation,
   closeConversation,
   deleteConversation,
+  getUserConversation,
 } = require("../controllers/conversationController");
 
 router.post(
@@ -27,6 +28,8 @@ router.get(
   authorizePermission("operator"),
   getOperatorConversations
 );
+
+router.get("/user/conversations", authenticateUser, getUserConversation);
 
 router.patch(
   "/:id/open",
