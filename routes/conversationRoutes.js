@@ -14,6 +14,7 @@ const {
   closeConversation,
   deleteConversation,
   getUserConversation,
+  findUserConversationById,
 } = require("../controllers/conversationController");
 
 router.post(
@@ -30,6 +31,8 @@ router.get(
 );
 
 router.get("/user/conversations", authenticateUser, getUserConversation);
+
+router.post("/user/findConversationById", findUserConversationById);
 
 router.patch(
   "/:id/open",
