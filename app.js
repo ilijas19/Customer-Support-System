@@ -40,6 +40,7 @@ const {
   userLeave,
   joinRoom,
   joinQueue,
+  leaveQueue,
   leaveRoom,
   getAllUsers,
   getUsersFromQueue,
@@ -91,7 +92,11 @@ const start = async () => {
     //operator joining chat
     socket.on("operatorJoin", ({ operator, user }) => {
       //  // Leave all rooms the operator is subscribed to
+      console.log(operator, user);
       leaveRoom(socket);
+      //
+      userJoin(user);
+      //
       joinRoom(socket, user.username, operator);
       io.to(user.username).emit("chatStart", { operator, user });
     });
@@ -108,7 +113,8 @@ const start = async () => {
 
     //removing user from queue on operator join
     socket.on("removeFromQueue", (user) => {
-      userLeave(user.socketId);
+      ///////
+      leaveQueue(user.socketId);
       io.emit("updateQueue", getUsersFromQueue());
     });
 
@@ -128,9 +134,9 @@ const start = async () => {
     //RECIEVING MESSAGE & SENDING TO DB
     socket.on("sendMessageToServer", (formatedMessage) => {
       const { socketId } = findUserByUsername(formatedMessage.from);
-      console.log(socketId);
+
       io.to(socketId).emit("messageForDatabase", formatedMessage);
-      // console.log(formatedMessage);
+      console.log(formatedMessage);
     });
 
     socket.on("disconnect", () => {

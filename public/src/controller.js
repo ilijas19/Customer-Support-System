@@ -34,11 +34,11 @@ const userPageController = async (socket, currentUser) => {
       userView.addMessageFormListener(socket, user.username, user);
     });
     //RECIEVING MESSAGES
-    //HERE
     socket.on("message", async (formatedMessage) => {
       userView.renderMessage(formatedMessage.msg, formatedMessage.from);
 
       // Emit to the server only if the current operator is the sender
+      //Storing messages to database
       if (formatedMessage.from === model.state.currentUser.username) {
         socket.emit("sendMessageToServer", {
           msg: formatedMessage.msg,
@@ -47,7 +47,7 @@ const userPageController = async (socket, currentUser) => {
         });
       }
     });
-
+    //HERE
     socket.on("reconnectionExistingChat", (conversation) => {
       //setting conversation to state
       socket.emit("setCurrentConversation", conversation);
@@ -117,6 +117,7 @@ const operatorPageController = async (socket, currentUser) => {
     });
 
     //STARTING OPENED CHAT FROM DB
+    //HERE
     socket.on("startOpenedChat", (conversation) => {
       //setting conversation to state
       socket.emit("setCurrentConversation", conversation);
@@ -131,11 +132,11 @@ const operatorPageController = async (socket, currentUser) => {
     });
 
     // RECEIVING MESSAGES
-    //HERE
     socket.on("message", async (formatedMessage) => {
       operatorView.renderMessage(formatedMessage.msg, formatedMessage.from);
 
       // Emit to the server only if the current operator is the sender
+      //Storing messages to database
       if (formatedMessage.from === model.state.currentUser.username) {
         socket.emit("sendMessageToServer", {
           msg: formatedMessage.msg,

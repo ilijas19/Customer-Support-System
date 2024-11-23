@@ -13,6 +13,10 @@ const joinQueue = (user) => {
   queue.push(user);
 };
 
+const leaveQueue = (socketId) => {
+  queue = queue.filter((u) => u.socketId !== socketId);
+};
+
 // Remove a user from the system and queue when they leave
 const userLeave = (socketId) => {
   const user = users.find((user) => user.socketId === socketId);
@@ -65,4 +69,5 @@ module.exports = {
   getAllUsers,
   getUsersFromQueue,
   findUserByUsername,
+  leaveQueue,
 };
