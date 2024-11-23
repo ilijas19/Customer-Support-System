@@ -95,7 +95,7 @@ class OperatorView {
     this._chatContainer.innerHTML = "";
   }
 
-  renderDatabaseConversations({ conversations }) {
+  renderDatabaseConversations({ conversations }, socket) {
     console.log(conversations);
     this._asideChatContainer.innerHTML = "";
 
@@ -108,9 +108,9 @@ class OperatorView {
           <p class="chat-status ${conversation.status}">${conversation.status}</p>
           <i class="fa-solid fa-ellipsis aside-icon"></i>
       `;
-      //-handler function to create conversation
+      //-handler function to open conversation
       asideChatEl.addEventListener("click", () => {
-        // handler(conversation);
+        socket.emit("operatorJoinOpenConversation", conversation);
       });
 
       this._asideChatContainer.appendChild(asideChatEl);

@@ -39,9 +39,11 @@ const {
   userJoin,
   userLeave,
   joinRoom,
+  joinQueue,
   leaveRoom,
   getAllUsers,
   getUsersFromQueue,
+  findUserByUsername,
 } = require("./controllers/socketController");
 
 const port = process.env.PORT || 5000;
@@ -59,11 +61,23 @@ const start = async () => {
     //RECIEVING CURRENT USER
     socket.on("userJoin", (user) => {
       userJoin(user);
-      io.emit("updateQueue", getUsersFromQueue());
+      if (user.role === "operator") {
+        io.emit("updateQueue", getUsersFromQueue());
+      }
 
       if (user.role === "user") {
         //-check for existing chat(user reconection)
         socket.emit("checkExistingChat", user);
+
+        socket.on("noExistingChat", () => {
+          joinQueue(user);
+          io.emit("updateQueue", getUsersFromQueue());
+        });
+
+        socket.on("existingChat", (conversation) => {
+          //happens on user reloading his open chat
+          io.to(user.username).emit("reconnectionExistingChat", conversation);
+        });
 
         joinRoom(socket, user.username, user);
       }
@@ -82,6 +96,16 @@ const start = async () => {
       io.to(user.username).emit("chatStart", { operator, user });
     });
 
+    //operator joining open chat
+    socket.on("operatorJoinOpenConversation", (conversation) => {
+      leaveRoom(socket);
+      joinRoom(socket, conversation.userId.username);
+
+      io.to(conversation.userId.username).emit("startOpenedChat", conversation);
+
+      console.log(`operator joining room ${conversation.userId.username}`);
+    });
+
     //removing user from queue on operator join
     socket.on("removeFromQueue", (user) => {
       userLeave(user.socketId);
@@ -91,6 +115,22 @@ const start = async () => {
     //recieving message from chat
     socket.on("chatMessage", (formatedMessage) => {
       io.to(formatedMessage.roomName).emit("message", formatedMessage);
+    });
+
+    //SETTING CURRENT CONVERSATION
+    socket.on("setCurrentConversation", (conversation) => {
+      io.to(conversation.userId.username).emit(
+        "setStateConversation",
+        conversation
+      );
+    });
+
+    //RECIEVING MESSAGE & SENDING TO DB
+    socket.on("sendMessageToServer", (formatedMessage) => {
+      const { socketId } = findUserByUsername(formatedMessage.from);
+      console.log(socketId);
+      io.to(socketId).emit("messageForDatabase", formatedMessage);
+      // console.log(formatedMessage);
     });
 
     socket.on("disconnect", () => {

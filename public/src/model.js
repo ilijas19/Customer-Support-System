@@ -1,6 +1,7 @@
 import { ORIGIN } from "./utils.js";
 export const state = {
   currentUser: {},
+  conversation: {},
 };
 
 export const loginUser = async (email, password) => {
@@ -54,6 +55,7 @@ export const createConversation = async (operatorId, userId) => {
       userId,
     });
     alert(result.data.msg);
+    return result.data;
   } catch (error) {
     alert(error.response.data.msg);
   }
@@ -74,6 +76,35 @@ export const getUserConversations = async () => {
   try {
     const result = await axios.get(`/api/v1/conversation/user/conversations`);
     return result.data;
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
+
+export const getUserConversationById = async (id) => {
+  try {
+    const result = await axios.post(
+      "/api/v1/conversation/user/findConversationById",
+      { id }
+    );
+    console.log(result.data);
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
+
+export const createTextMessage = async (
+  conversationId,
+  senderUsername,
+  text
+) => {
+  try {
+    const result = await axios.post("/api/v1/message/text", {
+      conversationId,
+      senderUsername,
+      text,
+    });
+    console.log(result.data);
   } catch (error) {
     alert(error.response.data.msg);
   }

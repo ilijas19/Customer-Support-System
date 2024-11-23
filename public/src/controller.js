@@ -15,8 +15,13 @@ const userPageController = async (socket, currentUser) => {
     //EXISTING CHAT(user recconection)
     socket.on("checkExistingChat", async (user) => {
       const { conversations } = await model.getUserConversations(user);
-      //////////continue here
-      console.log(conversations);
+      // -no active conversation
+      if (conversations.length === 0) {
+        socket.emit("noExistingChat");
+      } else {
+        socket.emit("existingChat", conversations[0]);
+      }
+      // has existing active conversation
     });
     //CHAT START
     socket.on("chatStart", ({ operator, user }) => {
@@ -29,9 +34,32 @@ const userPageController = async (socket, currentUser) => {
       userView.addMessageFormListener(socket, user.username, user);
     });
     //RECIEVING MESSAGES
-    socket.on("message", (formatedMessage) => {
-      console.log(formatedMessage);
+    //HERE
+    socket.on("message", async (formatedMessage) => {
       userView.renderMessage(formatedMessage.msg, formatedMessage.from);
+
+      // Emit to the server only if the current operator is the sender
+      if (formatedMessage.from === model.state.currentUser.username) {
+        socket.emit("sendMessageToServer", {
+          msg: formatedMessage.msg,
+          from: formatedMessage.from,
+          conversation: model.state.conversation,
+        });
+      }
+    });
+
+    socket.on("reconnectionExistingChat", (conversation) => {
+      //setting conversation to state
+      socket.emit("setCurrentConversation", conversation);
+
+      userView.chatInit(model.state);
+      userView.addMessageFormListener(
+        socket,
+        model.state.currentUser.username,
+        model.state.currentUser
+      );
+
+      console.log(conversation);
     });
   }
 };
@@ -49,11 +77,15 @@ const operatorPageController = async (socket, currentUser) => {
           // Operator joins chat
           model.state.currentUser.room = user.username;
 
-          //CREATING CONVERSATION
-          // await model.createConversation(
-          //   model.state.currentUser.userId,
-          //   user.userId
-          // );
+          // CREATING CONVERSATION
+          const { conversation } = await model.createConversation(
+            model.state.currentUser.userId,
+            user.userId
+          );
+
+          //setting conversation to state
+          model.state.conversation = conversation;
+          socket.emit("setCurrentConversation", conversation);
 
           socket.emit("operatorJoin", {
             operator: model.state.currentUser,
@@ -79,13 +111,38 @@ const operatorPageController = async (socket, currentUser) => {
         socket.emit("requestQueueUpdate"); // Trigger server-side queue update
       } else {
         const conversations = await model.getOperatorConversations(value);
-        operatorView.renderDatabaseConversations(conversations);
+        //OPERATOR JOINING OPEN CONVERSATION
+        operatorView.renderDatabaseConversations(conversations, socket);
       }
     });
 
+    //STARTING OPENED CHAT FROM DB
+    socket.on("startOpenedChat", (conversation) => {
+      //setting conversation to state
+      socket.emit("setCurrentConversation", conversation);
+
+      operatorView.addMessageFormListener(
+        socket,
+        conversation.userId.username,
+        model.state.currentUser
+      );
+      operatorView.chatInit("", conversation.userId);
+      console.log("startOpenedChat");
+    });
+
     // RECEIVING MESSAGES
-    socket.on("message", (formattedMessage) => {
-      operatorView.renderMessage(formattedMessage.msg, formattedMessage.from);
+    //HERE
+    socket.on("message", async (formatedMessage) => {
+      operatorView.renderMessage(formatedMessage.msg, formatedMessage.from);
+
+      // Emit to the server only if the current operator is the sender
+      if (formatedMessage.from === model.state.currentUser.username) {
+        socket.emit("sendMessageToServer", {
+          msg: formatedMessage.msg,
+          from: formatedMessage.from,
+          conversation: model.state.conversation,
+        });
+      }
     });
   }
 };
@@ -108,6 +165,34 @@ const socketController = async () => {
     //CALLING SPECIFIC PAGE CONTROLLERS
     userPageController(socket, currentUser);
     operatorPageController(socket, currentUser);
+
+    socket.on("setStateConversation", (conversation) => {
+      model.state.conversation = conversation;
+    });
+
+    socket.on("message1", async (formatedMessage) => {
+      console.log(`socket controller ${formatedMessage.from}`);
+
+      socket.emit("sendMessageToServer", {
+        msg: formatedMessage.msg,
+        from: formatedMessage.from,
+        conversation: model.state.conversation,
+      });
+
+      //ignore this
+      // const { msg, from } = formatedMessage;
+      // console.log(msg, from, model.state.conversation);
+      // if ((msg, from)) {
+      //   await model.createTextMessage(model.state.conversation._id, from, msg);
+      // }
+    });
+
+    socket.on("messageForDatabase", async (data) => {
+      const { msg, from } = data;
+      if ((msg, from)) {
+        await model.createTextMessage(model.state.conversation._id, from, msg);
+      }
+    });
   }
 };
 
