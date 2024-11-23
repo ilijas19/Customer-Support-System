@@ -17,7 +17,7 @@ const createConversation = async (req, res) => {
   if (!user) {
     throw new CustomError.NotFoundError(`No user with id: ${userId}`);
   }
-
+  ///TURN BACK LATER
   // const existingConversation = await Conversation.findOne({
   //   operatorId,
   //   userId,
@@ -35,15 +35,15 @@ const createConversation = async (req, res) => {
   res.status(StatusCodes.CREATED).json({
     msg: "Conversation Created",
     conversation: {
-      operator: {
+      operatorId: {
         username: operator.username,
         operatorId,
       },
-      user: {
+      userId: {
         username: user.username,
         userId,
       },
-      conversationId: conversation._id,
+      _id: conversation._id,
     },
   });
 };
@@ -78,6 +78,38 @@ const getUserConversation = async (req, res) => {
   const user = await User.findOne({
     _id: req.user.userId,
     role: "user",
+  });
+
+  if (!user) {
+    throw new CustomError.NotFoundError(
+      `Cant find user with id ${req.user.userId}`
+    );
+  }
+  const queryObject = { userId: user._id };
+  const { status } = req.query;
+  if (status) {
+    queryObject.status = status;
+  }
+  const conversations = await Conversation.find(queryObject)
+    .populate({
+      path: "userId",
+      select: "username",
+    })
+    .populate({
+      path: "operatorId",
+      select: "username",
+    });
+
+  res.status(StatusCodes.OK).json({ conversations });
+};
+
+const findUserConversationById = async (req, res) => {
+  const { id: userId } = req.body;
+  if (!userId) {
+    throw new CustomError.BadRequestError("User Id Must Be Provided");
+  }
+  const user = await User.findOne({
+    _id: userId,
   });
 
   if (!user) {
@@ -183,4 +215,5 @@ module.exports = {
   closeConversation,
   deleteConversation,
   getUserConversation,
+  findUserConversationById,
 };
