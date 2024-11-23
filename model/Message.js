@@ -9,7 +9,11 @@ const MessageSchema = new mongoose.Schema({
   senderId: {
     type: mongoose.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: [true, "Please provide sender username"],
+  },
+  senderUsername: {
+    type: String,
+    required: [true, "please provide sender username"],
   },
   text: {
     type: String,

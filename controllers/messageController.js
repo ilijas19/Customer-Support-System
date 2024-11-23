@@ -5,21 +5,38 @@ const CustomErorr = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 
 const createTextMessage = async (req, res) => {
-  const { conversationId, senderId, text } = req.body;
-  if (!conversationId || !senderId || !text) {
+  const { conversationId, senderUsername, text } = req.body;
+  if (!conversationId || !senderUsername || !text) {
     throw new CustomErorr.BadRequestError("All credientials must be proviided");
   }
   const conversation = await Conversation.findOne({ _id: conversationId });
-  const sender = await User.findOne({ _id: senderId });
+  const sender = await User.findOne({ username: senderUsername });
   if (!conversation) {
     throw new CustomErorr.NotFoundError(
       `No conversation with id ${conversationId}`
     );
   }
   if (!sender) {
-    throw new CustomErorr.NotFoundError(`No user with id: ${senderId}`);
+    throw new CustomErorr.NotFoundError(`No user with id: ${senderUsername}`);
   }
-  const message = await Message.create({ conversationId, senderId, text });
+
+  console.log(sender._id.toString());
+  console.log(conversation.operatorId.toString());
+  if (
+    sender._id.toString() !== conversation.userId.toString() &&
+    sender._id.toString() !== conversation.operatorId.toString()
+  ) {
+    throw new CustomErorr.BadRequestError(
+      `${senderUsername} does not participate in conversation with id: ${conversationId}`
+    );
+  }
+  const message = await Message.create({
+    conversationId,
+    senderId: sender._id,
+    senderUsername,
+    text,
+  });
+
   conversation.messages.push(message._id);
   await conversation.save();
   res.status(StatusCodes.CREATED).json({ msg: "Message Created", message });
