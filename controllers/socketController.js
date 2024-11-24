@@ -4,9 +4,6 @@ let queue = [];
 // Add a user to the system and queue if applicable
 const userJoin = (user) => {
   users.push(user);
-  // if (user.role === "user") {
-  //   queue.push(user);
-  // }
 };
 
 const joinQueue = (user) => {
