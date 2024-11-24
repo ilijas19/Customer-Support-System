@@ -14,7 +14,7 @@ const {
 
 router.post("/text", createTextMessage);
 router.post("/img", createImgMessage);
-router.get("/recent", getRecentMessages);
+router.post("/recent", getRecentMessages);
 router.get("/clear", clearMessageHistory);
 
 module.exports = router;

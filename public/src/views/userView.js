@@ -63,6 +63,44 @@ class UserView {
     this._chatContainer.scrollTo(0, this._chatContainer.scrollHeight);
     this._messageInput.focus();
   }
+
+  renderPreviousMessages(messages) {
+    messages.forEach((message) => {
+      const msgEl = `
+      <li class="message message-${
+        message.senderId.username !== this._currentUser.username
+          ? "left"
+          : "right"
+      }">
+        <p class="message-info">${
+          message.senderId.username
+        } <span>${this._getTimeFromTimestamp(message.timestamp)}</span></p>
+        <p class="message-text">
+          ${message.text}
+        </p>
+      </li>
+    `;
+      this._chatContainer.insertAdjacentHTML("beforeend", msgEl);
+    });
+    this._chatContainer.scrollTo(0, this._chatContainer.scrollHeight);
+  }
+
+  _getTimeFromTimestamp(timestamp) {
+    const date = new Date(timestamp); // Convert the timestamp string to a Date object
+    let hours = date.getHours(); // Get hours (24-hour format)
+    const minutes = date.getMinutes().toString().padStart(2, "0"); // Get minutes and pad with zero
+    const ampm = hours >= 12 ? "PM" : "AM"; // Determine AM or PM
+
+    hours = hours % 12 || 12; // Convert to 12-hour format (0 becomes 12)
+    return `${hours.toString().padStart(2, "0")}:${minutes} ${ampm}`; // Return formatted time
+  }
+
+  reloadPage() {
+    if (window.location.pathname === "/userChat") {
+      alert("Operator Closed Your Conversation");
+      location.reload();
+    }
+  }
 }
 
 export default new UserView();

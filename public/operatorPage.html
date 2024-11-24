@@ -19,20 +19,21 @@
       <select class="chat-type">
         <option class="pending" value="pending">Pending</option>
         <option class="open" value="open">Open</option>
-        <option class="closed" value="closed">Closed</option>
       </select>
       <section class="aside-chat-section">
-        <div class="aside-chat">
+        <!-- <div class="aside-chat">
           <p class="aside-chat-name">Ilijas</p>
           <p class="chat-status pending">Pending</p>
           <i class="fa-solid fa-ellipsis aside-icon"></i>
-        </div>
+        </div> -->
+
         <!-- <div class="aside-chat">
           <p class="aside-chat-name">Ilijas</p>
           <p class="chat-status open">Open</p>
           <i class="fa-solid fa-ellipsis aside-icon"></i>
-        </div>
-        <div class="aside-chat">
+        </div> -->
+
+        <!-- <div class="aside-chat">
           <p class="aside-chat-name">Ilijas</p>
           <p class="chat-status closed">Closed</p>
           <i class="fa-solid fa-ellipsis aside-icon"></i>
@@ -41,9 +42,13 @@
     </aside>
     <main class="chat">
       <div class="chat-heading">
+        <i id="dot-dropdown-btn" class="fa-solid fa-ellipsis aside-icon"></i>
         <h1 class="chat-title">Chat</h1>
         <p class="operator-name"></p>
         <button class="logout-btn">Logout</button>
+        <ul class="dot-dropdown">
+          <li class="dot-dropdown-li" id="close-chat">Close & Delete Chat</li>
+        </ul>
       </div>
       <ul class="chat-container">
         <!-- <li class="message message-left">

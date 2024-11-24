@@ -109,3 +109,32 @@ export const createTextMessage = async (
     alert(error.response.data.msg);
   }
 };
+
+export const getRecentMessages = async (conversationId, page) => {
+  try {
+    const result = await axios.post("/api/v1/message/recent", {
+      conversationId,
+      page,
+    });
+    return result.data;
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
+
+export const deleteConversation = async (conversationId) => {
+  try {
+    const result = await axios.delete(`/api/v1/conversation/${conversationId}`);
+    console.log(result.data.msg);
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    await axios.delete(`/api/v1/auth/logout`);
+  } catch (error) {
+    alert(error.response.data.msg);
+  }
+};

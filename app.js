@@ -26,6 +26,10 @@ const io = socketio(server);
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
+
 app.use("/", navigationRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/conversation", conversationRouter);
@@ -92,7 +96,6 @@ const start = async () => {
     //operator joining chat
     socket.on("operatorJoin", ({ operator, user }) => {
       //  // Leave all rooms the operator is subscribed to
-      console.log(operator, user);
       leaveRoom(socket);
       //
       userJoin(user);
@@ -107,8 +110,6 @@ const start = async () => {
       joinRoom(socket, conversation.userId.username);
 
       io.to(conversation.userId.username).emit("startOpenedChat", conversation);
-
-      console.log(`operator joining room ${conversation.userId.username}`);
     });
 
     //removing user from queue on operator join
@@ -136,7 +137,13 @@ const start = async () => {
       const { socketId } = findUserByUsername(formatedMessage.from);
 
       io.to(socketId).emit("messageForDatabase", formatedMessage);
-      console.log(formatedMessage);
+    });
+
+    //CLOSING AND DELETING CONVERSATION
+    socket.on("deletedConversation", (conversation) => {
+      io.to(conversation.userId.username).emit("closeClientConversation", {
+        msg: "This conversation is deleted",
+      });
     });
 
     socket.on("disconnect", () => {

@@ -25,7 +25,6 @@ const userPageController = async (socket, currentUser) => {
     });
     //CHAT START
     socket.on("chatStart", ({ operator, user }) => {
-      console.log(`Chat Beetween ${operator.username} and ${user.username}`);
       userView.chatInit(model.state);
       userView.renderMessage(
         `Operator has joined your chat. You can ask your question`,
@@ -48,7 +47,7 @@ const userPageController = async (socket, currentUser) => {
       }
     });
     //HERE
-    socket.on("reconnectionExistingChat", (conversation) => {
+    socket.on("reconnectionExistingChat", async (conversation) => {
       //setting conversation to state
       socket.emit("setCurrentConversation", conversation);
 
@@ -59,7 +58,9 @@ const userPageController = async (socket, currentUser) => {
         model.state.currentUser
       );
 
-      console.log(conversation);
+      //LOADING PREVIOUS MESSAGES
+      const messages = await model.getRecentMessages(conversation._id, 1);
+      userView.renderPreviousMessages(messages.mesages);
     });
   }
 };
@@ -86,6 +87,12 @@ const operatorPageController = async (socket, currentUser) => {
           //setting conversation to state
           model.state.conversation = conversation;
           socket.emit("setCurrentConversation", conversation);
+          //HERE
+          operatorView.addDotMenuListeners(
+            model.deleteConversation,
+            conversation,
+            socket
+          );
 
           socket.emit("operatorJoin", {
             operator: model.state.currentUser,
@@ -99,7 +106,6 @@ const operatorPageController = async (socket, currentUser) => {
 
     // CHAT START
     socket.on("chatStart", ({ operator, user }) => {
-      console.log(`Chat Between ${operator.username} and ${user.username}`);
       operatorView.chatInit(operator, user);
       operatorView.addMessageFormListener(socket, user.username, operator);
     });
@@ -117,8 +123,7 @@ const operatorPageController = async (socket, currentUser) => {
     });
 
     //STARTING OPENED CHAT FROM DB
-    //HERE
-    socket.on("startOpenedChat", (conversation) => {
+    socket.on("startOpenedChat", async (conversation) => {
       //setting conversation to state
       socket.emit("setCurrentConversation", conversation);
 
@@ -128,7 +133,10 @@ const operatorPageController = async (socket, currentUser) => {
         model.state.currentUser
       );
       operatorView.chatInit("", conversation.userId);
-      console.log("startOpenedChat");
+
+      //LOADING PREVIOUS MESSAGES
+      const messages = await model.getRecentMessages(conversation._id, 1);
+      operatorView.renderPreviousMessages(messages.mesages);
     });
 
     // RECEIVING MESSAGES
@@ -155,12 +163,13 @@ const socketController = async () => {
   ) {
     const currentUser = await model.getCurrentUser();
     const socket = io();
+    operatorView.addLogoutBtnHandler(model.logoutUser);
     //GETTING SOCKET ID ON CONNECTION
     socket.on("socketConnected", (data) => {
       //SETTING SOCKETID PROPERTY ON CURRENT USER & SENDING USER BACK TO CLIENT
       currentUser.socketId = data;
       model.state.currentUser = currentUser;
-      // console.log(currentUser); //currentuser
+
       socket.emit("userJoin", currentUser);
     });
     //CALLING SPECIFIC PAGE CONTROLLERS
@@ -169,23 +178,20 @@ const socketController = async () => {
 
     socket.on("setStateConversation", (conversation) => {
       model.state.conversation = conversation;
+      //HERE
+      operatorView.addDotMenuListeners(
+        model.deleteConversation,
+        conversation,
+        socket
+      );
     });
 
     socket.on("message1", async (formatedMessage) => {
-      console.log(`socket controller ${formatedMessage.from}`);
-
       socket.emit("sendMessageToServer", {
         msg: formatedMessage.msg,
         from: formatedMessage.from,
         conversation: model.state.conversation,
       });
-
-      //ignore this
-      // const { msg, from } = formatedMessage;
-      // console.log(msg, from, model.state.conversation);
-      // if ((msg, from)) {
-      //   await model.createTextMessage(model.state.conversation._id, from, msg);
-      // }
     });
 
     socket.on("messageForDatabase", async (data) => {
@@ -193,6 +199,12 @@ const socketController = async () => {
       if ((msg, from)) {
         await model.createTextMessage(model.state.conversation._id, from, msg);
       }
+    });
+
+    //deleted conversation
+    socket.on("closeClientConversation", (data) => {
+      operatorView.reloadPage();
+      userView.reloadPage();
     });
   }
 };

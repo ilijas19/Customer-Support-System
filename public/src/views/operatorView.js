@@ -6,8 +6,50 @@ class OperatorView {
   _asideChatContainer = document.querySelector(".aside-chat-section");
   _chatTitle = document.querySelector(".chat-title");
   _chatTypeSelect = document.querySelector(".chat-type");
+  _logoutButton = document.querySelector(".logout-btn");
+  //dotmenu
+  _dotMenuButton = document.getElementById("dot-dropdown-btn");
+  _dotMenu = document.querySelector(".dot-dropdown");
+  _closeChatBtn = document.getElementById("close-chat");
+  _closeAndDeleteBtn = document.getElementById("close-delete-chat");
+  _dropdownLiEl = document.querySelector(".dot-dropdown-li");
+
+  //variables
   _messageSubmitHandler = null;
+  _clickHandler = null;
   _currentUser;
+
+  addDotMenuListeners(handler, conversation, socket) {
+    if (window.location.pathname === "/operator") {
+      this._dotMenuButton.style.opacity = "1";
+      this._dotMenuButton.style.pointerEvents = "auto";
+      this._dotMenuButton.style.cursor = "pointer";
+
+      // Remove the existing click handler if it exists
+      if (this._clickHandler) {
+        this._dropdownLiEl.removeEventListener("click", this._clickHandler);
+        this._clickHandler = null;
+      }
+
+      // function
+      this._clickHandler = (e) => {
+        handler(conversation._id);
+        socket.emit("deletedConversation", conversation);
+      };
+
+      // Add click handler
+      this._dropdownLiEl.addEventListener("click", this._clickHandler);
+      this._toggleMenu();
+    }
+  }
+
+  _toggleMenu() {
+    this._dotMenuButton.addEventListener("click", () => {
+      const isVisible = this._dotMenu.style.opacity === "1";
+      this._dotMenu.style.opacity = isVisible ? "0" : "1";
+      this._dotMenu.style.pointerEvents = isVisible ? "none" : "auto";
+    });
+  }
 
   addSelectElListener(handler) {
     this._chatTypeSelect?.addEventListener("change", () => {
@@ -32,7 +74,7 @@ class OperatorView {
       asideChatEl.innerHTML = `
           <p class="aside-chat-name">${user.username}</p>
           <p class="chat-status pending">Pending</p>
-          <i class="fa-solid fa-ellipsis aside-icon"></i>
+         
       `;
       //-handler function to create conversation
       asideChatEl.addEventListener("click", () => {
@@ -96,7 +138,6 @@ class OperatorView {
   }
 
   renderDatabaseConversations({ conversations }, socket) {
-    console.log(conversations);
     this._asideChatContainer.innerHTML = "";
 
     conversations.forEach((conversation) => {
@@ -106,7 +147,7 @@ class OperatorView {
       asideChatEl.innerHTML = `
           <p class="aside-chat-name">${conversation.userId.username}</p>
           <p class="chat-status ${conversation.status}">${conversation.status}</p>
-          <i class="fa-solid fa-ellipsis aside-icon"></i>
+          
       `;
       //-handler function to open conversation
       asideChatEl.addEventListener("click", () => {
@@ -114,6 +155,51 @@ class OperatorView {
       });
 
       this._asideChatContainer.appendChild(asideChatEl);
+    });
+  }
+
+  renderPreviousMessages(messages) {
+    messages.forEach((message) => {
+      const msgEl = `
+      <li class="message message-${
+        message.senderId.username !== this._currentUser.username
+          ? "left"
+          : "right"
+      }">
+        <p class="message-info">${
+          message.senderId.username
+        } <span>${this._getTimeFromTimestamp(message.timestamp)}</span></p>
+        <p class="message-text">
+          ${message.text}
+        </p>
+      </li>
+    `;
+      this._chatContainer.insertAdjacentHTML("beforeend", msgEl);
+    });
+    this._chatContainer.scrollTo(0, this._chatContainer.scrollHeight);
+  }
+
+  _getTimeFromTimestamp(timestamp) {
+    const date = new Date(timestamp); // Convert the timestamp string to a Date object
+    let hours = date.getHours(); // Get hours (24-hour format)
+    const minutes = date.getMinutes().toString().padStart(2, "0"); // Get minutes and pad with zero
+    const ampm = hours >= 12 ? "PM" : "AM"; // Determine AM or PM
+
+    hours = hours % 12 || 12; // Convert to 12-hour format (0 becomes 12)
+    return `${hours.toString().padStart(2, "0")}:${minutes} ${ampm}`; // Return formatted time
+  }
+
+  reloadPage() {
+    if (window.location.pathname === "/operator") {
+      location.reload();
+    }
+  }
+
+  addLogoutBtnHandler(handler) {
+    this._logoutButton.addEventListener("click", () => {
+      handler();
+      alert("Logout");
+      window.location.href = "/login";
     });
   }
 }

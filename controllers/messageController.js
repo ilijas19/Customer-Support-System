@@ -47,7 +47,7 @@ const createImgMessage = async (req, res) => {
 };
 
 const getRecentMessages = async (req, res) => {
-  const { conversationId, page = 1, limit = 10 } = req.body;
+  const { conversationId, page = 1, limit = 20 } = req.body;
   const skip = (Number(page) - 1) * Number(limit);
   if (!conversationId) {
     throw new CustomErorr.BadRequestError("Conversation id must be provided");
